@@ -10,13 +10,26 @@ import (
 
 type responseWriter struct {
 	http.ResponseWriter
-	t time.Time
+	t           time.Time
+	wroteHeader bool
 }
 
 func (w *responseWriter) WriteHeader(code int) {
+	if w.wroteHeader {
+		return
+	}
+	w.wroteHeader = true
+
 	diff := time.Now().Sub(w.t) / time.Millisecond
 	w.Header().Set("Server-Timing", fmt.Sprintf(`total=%d; "Total Response Time"`, diff))
 	w.ResponseWriter.WriteHeader(code)
+}
+
+func (w *responseWriter) Write(b []byte) (int, error) {
+	if !w.wroteHeader {
+		w.WriteHeader(http.StatusOK)
+	}
+	return w.ResponseWriter.Write(b)
 }
 
 // Push implements Pusher interface
