@@ -20,8 +20,8 @@ func (w *responseWriter) WriteHeader(code int) {
 	}
 	w.wroteHeader = true
 
-	diff := time.Now().Sub(w.t) / time.Millisecond
-	w.Header().Set("Server-Timing", fmt.Sprintf(`total=%d; "Total Response Time"`, diff))
+	diff := float64(time.Now().Sub(w.t)) / float64(time.Millisecond)
+	w.Header().Set("Server-Timing", fmt.Sprintf(`total=%.2f; "Total Response Time"`, diff))
 	w.ResponseWriter.WriteHeader(code)
 }
 
